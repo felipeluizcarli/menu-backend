@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColu
 import { Category } from '../categories/category.entity';
 
 @Entity('') 
-export class product {
+export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

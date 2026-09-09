@@ -4,12 +4,11 @@ import { Spot } from './spot.entity';
 
 
 import { SpotController } from './spot.controller';
-import { SpotService } from './spot.service';
+import { SpotService } from './guets-checks.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Spot])],
   controllers: [SpotController],
   providers: [SpotService],
-  exports: [SpotService],
 })
 export class SpotModule {}

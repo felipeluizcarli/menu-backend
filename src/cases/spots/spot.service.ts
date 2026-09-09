@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Spot } from './spot.entity';
-import { CreateSpotDto } from './dto/create-spot.dto';
-import { UpdateSpotDto } from './dto/update-spot.dto';
+import { CreateSpotDto } from './dto/create-spot';
+import { UpdateSpotDto } from './dto/update-spot';
 
 @Injectable()
 export class SpotService {

@@ -1,30 +1,40 @@
-import { Inject, Module } from '@nestjs/common';
-import { configModule } from './config/config.module';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
-
 
 @Module({
   imports: [
-    configModule.forRoot({
+    ConfigModule.forRoot({
       isGlobal: true,
-      TypeOrmModule.forRootAsync({
-        Inject: [ConfigService],
-        useFactory: (configService: ConfigService) => ({
-          const databaseUrl = configService.get<string>('DATABASE_URL');
-          const databaseSchema = configService.get<string>('DATABASE_SCHEMA', 'public');
+    }),
 
-          if (!databaseUrl) {
-            throw new Error('A variável de ambiente DATABASE_URL não encontrada.');
-          }
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
 
-          return {
-            type: 'postgres',
-            url: databaseUrl,
-            schema: databaseSchema,
-            autoLoadEntities: true,
+      useFactory: (configService: ConfigService) => {
+        const databaseURL =
+          configService.get<string>('DATABASE_URL');
+
+        const dbSchema =
+          configService.get<string>('DATABASE_SCHEMA', 'public');
+
+        if (!databaseURL) {
+          throw new Error(
+            'A variável de ambiente DATABASE_URL não foi encontrada!',
+          );
+        }
+
+        return {
+          type: 'postgres' as const,
+          url: databaseURL,
+          schema: dbSchema,
+          autoLoadEntities: true,
+          synchronize: true,
+        };
+      },
     }),
   ],
+
   controllers: [],
   providers: [],
 })

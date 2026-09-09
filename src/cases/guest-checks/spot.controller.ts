@@ -11,9 +11,9 @@ import {
   Post,
 } from '@nestjs/common';
 
-import { SpotService } from './spot.service';
+import { SpotService } from './guets-checks.service';
 import { Spot } from './spot.entity';
-import { CreateSpotDto } from './dto/create-spot';
+import { CreateSpotDto } from './dto/create-guest-check';
 import { UpdateSpotDto } from './dto/update-spot';
 
 @Controller('spots')
