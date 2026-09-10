@@ -14,6 +14,7 @@ import { GuestCheck, GuestCheckStatus } from './guest-checks.entity';
 import { Spot } from '../spots/spot.entity';
 
 
+
 @Injectable()
 export class GuestChecksService {
   constructor(
@@ -76,7 +77,7 @@ export class GuestChecksService {
     if (guestCheck.status !== GuestCheckStatus.CLOSED) {
       throw new BadRequestException(
         'A comanda ja esta fechada')
-      );
+      )};
 
     //regra 2= nao posso fechar uma comanda com pedidos que nao foram entregues
     //TO_DO: Implementar isto depois (divida tecnica)
@@ -86,10 +87,31 @@ export class GuestChecksService {
     guestCheck.status = GuestCheckStatus.CLOSED;
 
     return this.guestCheckRepository.save(guestCheck);
-   
-   
-'
+
     }
+
+    findOpendBySpotId(spotId: string): Promise<GuestCheck | null > {
+      return this.guestCheckRepository.findOne({
+        where: {
+          spot: { id: spotId },
+          status: GuestCheckStatus.OPENED,
+        },
+        relations: ['spot'],
+      });
+    }  
+
+    async findOrCreateOpened(spotId: string): Promise<GuestCheck> {
+      const opned = await this.findOpendBySpotId(spotId);
+
+
+
+      //Fluxo do SIM
+    if (opened){
+      return opened;
+    }
+
+    //Fluxo do NAO
+    return this.create({ spotId });
 
 
   }

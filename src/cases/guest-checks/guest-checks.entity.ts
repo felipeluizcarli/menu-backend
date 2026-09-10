@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum GuestCheckStatus {
   OPENED = 'OPENED',
@@ -13,5 +13,13 @@ export class GuestCheck {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
+  @Column({
+    type: 'enum',
+    enum: GuestCheckStatus,
+    default: GuestCheckStatus.OPENED
+  })
+
   status: GuestCheckStatus;
+
+  @ManyToOne{() => Spot, }
 }
