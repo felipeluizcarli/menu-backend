@@ -1,23 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
-import { Spot } from './spot.entity';
-import { CreateSpotDto } from './dto/create-spot';
-import { UpdateSpotDto } from './dto/update-spot';
+import { Repository } from "typeorm";
+import { Spot } from "./spot.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { CreateSpotDto } from "./dto/create-spot";
+import { UpdateSpotDto } from "./dto/update-spot";
 
 @Injectable()
 export class SpotService {
-  constructor(
+
+  constructor( 
     @InjectRepository(Spot)
-    private readonly spotRepository: Repository<Spot>,
+    private readonly spotRepository: Repository<Spot> 
   ) {}
 
   findAll(): Promise<Spot[]> {
     return this.spotRepository.find({
-      order: {
-        name: 'ASC',
-      },
+      order: { name: 'ASC' }
     });
   }
 
@@ -25,17 +23,18 @@ export class SpotService {
     const spot = await this.spotRepository.findOneBy({ id });
 
     if (!spot) {
-      throw new NotFoundException('Local não encontrado');
+      throw new NotFoundException('Categoria não encontrada!');
     }
 
     return spot;
   }
 
   create(dto: CreateSpotDto): Promise<Spot> {
+
     const spot = this.spotRepository.create({
       ...dto,
       name: dto.name,
-      active: true,
+      active: true
     });
 
     return this.spotRepository.save(spot);
@@ -55,9 +54,10 @@ export class SpotService {
     return this.spotRepository.save(spot);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id:string): Promise<void> {
     const spot = await this.findOne(id);
 
     await this.spotRepository.remove(spot);
   }
+
 }

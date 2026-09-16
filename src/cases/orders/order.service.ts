@@ -1,18 +1,18 @@
-import { Injectable } from '@nestjs/common';
-
-import { CreateOrderDto } from './dto/create-order.dto';
-import { Order } from './order.entity';
-import { OrderItem } from './order-Item.entity';
-import { GuestCheckService } from '../guest-checks/guest-checks.service';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateOrderDto, CreateOrderItemDto } from './dto/create-order';
+import { Order, OrderStatus } from './entities/order-entity';
+import { OrderItem } from './entities/order-item.entity';
+import { GuestCheckService } from '../guest-checks/guest-check.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { OrderStatus } from './entities/order-entity';
+import { ProductService } from '../products/product.service';
+import { updateOrderStatusDto } from './dto/update-order-status';
 
 @Injectable()
 export class OrderService {
-  ProductService: any;
   constructor(
     private readonly guestCheckService: GuestCheckService,
+    private readonly productService: ProductService,
 
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
@@ -21,44 +21,87 @@ export class OrderService {
     private readonly orderItemRepository: Repository<OrderItem>,
   ) {}
 
-   private async prepareItems(dto: CreateOrderDto): Promise<OrderItem> {
-    const product = await this.ProductService.findOne(dto.productId);
-    const subtotal = dto.quantity * product.price;
+  private async prepareItems(dto: CreateOrderItemDto): Promise<OrderItem> {
+    const product = await this.productService.findOne(dto.productId);
+    const subtotal = dto.quantity * Number(product.price);
 
     return this.orderItemRepository.create({
       product,
       quantity: dto.quantity,
-      subtotal
-    })
+      subtotal,
+    });
   }
 
   async create(dto: CreateOrderDto): Promise<Order> {
-    // Regra 1: verificar se tem comanda aberta para a mesa
-    const guestCheck =
-      await this.guestCheckService.findOrCreateOpened(dto.spotId);
+    // Regra #1: Verificar se tem comanda aberta para a mesa
+    const guestCheck = await this.guestCheckService.findOrCreateOpened(
+      dto.spotId,
+    );
 
     // Monta o totalizador do pedido
-    const items: OrderItem[];
+    const items: OrderItem[] = [];
     let total = 0;
 
-    for (const itemDto of dto.item) {
-        const item = await this.prepareItems(itemDto);
-        items.push(item);
-        total += Number(item.subtotal)
-        
-        }
+    for (const itemDto of dto.items) {
+      const item = await this.prepareItems(itemDto); // Prepara para inserir no banco
+      items.push(item);
+      total += Number(item.subtotal);
+    }
 
-        //Monta o pedido
-        const order = this.orderRepository.create({
-        guestCheck,
-        status: OrderStatus.NEW,
-        total
-        });
+    // Monta o pedido
+    const order = this.orderRepository.create({
+      guestCheck,
+      status: OrderStatus.NEW,
+      total,
+      items,
+    });
 
-        //Grava no banco opedido
-        await this.orderRepository.save(order);
+    // Gravar no banco o pedido
+    return this.orderRepository.save(order);
+  }
 
-        return this.orderRepository.save(order);
-       
+  findAll(): Promise<Order[]> {
+    return this.orderRepository.find({
+      order: { createdAt: 'ASC',
+      },
+    });
+  }
+
+  async findOne(id: string): Promise<Order> {
+    const order = await this.orderRepository.findOneBy({ id });
+
+    if (!order) {
+      throw new NotFoundException('pedido não encontrada!');
+    }
+
+    return order;
+  }
+
+  async updateStatus(
+    id: string, 
+    dto: updateOrderStatusDto  
+  ): Promise<Order> {
+    const order =   await this.findOne(id);
+
+    //Detarmino a sequencia obrigatoria de mudanca de status
+    
+    const nextStatus: Record<OrderStatus, OrderStatus | undefined> = {
+      [OrderStatus.NEW]: OrderStatus.PREPARING,
+      [OrderStatus.PREPARING]: OrderStatus.READY,
+      [OrderStatus.READY]: OrderStatus.DELIVERY,
+      [OrderStatus.DELIVERY]: undefined
+    }
+    
+    //Verifico se o status esta enviado um status valido
+    if (nextStatus[order.status] !== dto.status) {
+      throw new BadRequestException ('Status inválido');
+    }
+
+    //Forco a mudança de status
+    order.status = dto.status;
+
+    //Grava no banco
+    return this.orderRepository.save(order);
+
   }
 }

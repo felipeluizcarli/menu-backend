@@ -9,5 +9,5 @@ export class UpdateSpotDto {
 
   @IsOptional()
   @IsBoolean()
-  active: boolean;  
+  active?: boolean;
 }

@@ -1,19 +1,17 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength, IsNumber, Min, IsUUID, IsUrl } from "class-validator";
+import { IsBoolean, IsNumber, IsOptional, IsString, IsUrl, IsUUID, MaxLength, Min } from "class-validator";
 
 export class UpdateProductDto {
-
-
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(60)
-  name: string;
+  name?: string;
 
   @IsOptional()
   @IsString()
   description?: string;
 
-
-  @IsNumber()
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   price?: number;
 
@@ -21,12 +19,11 @@ export class UpdateProductDto {
   @IsUUID()
   categoryId?: string;
 
-
   @IsOptional()
-  @IsBoolean()  
-  active?: boolean;
+  @IsBoolean()
+  active?:boolean;
 
   @IsOptional()
   @IsUrl({ require_protocol: true })
-  picture?: string
-} 
+  picture?: string;
+}

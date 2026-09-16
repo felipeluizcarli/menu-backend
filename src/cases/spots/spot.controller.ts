@@ -1,35 +1,26 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-} from '@nestjs/common';
-
-import { SpotService } from './spot.service';
-import { Spot } from './spot.entity';
-import { CreateSpotDto } from './dto/create-spot';
-import { UpdateSpotDto } from './dto/update-spot';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Spot } from "./spot.entity";
+import { SpotService } from "./spot.service";
+import { CreateSpotDto } from "./dto/create-spot";
+import { UpdateSpotDto } from "./dto/update-spot";
 
 @Controller('spots')
 export class SpotController {
-  constructor(private readonly service: SpotService) {}
+
+  constructor(
+    private readonly service: SpotService
+  ){}
 
   @Get()
-  findAll(): Promise<Spot[]> {
+  findAll() : Promise<Spot[]> {
     return this.service.findAll();
   }
 
   @Get(':id')
   findOne(
     @Param('id', ParseUUIDPipe)
-    id: string,
-  ): Promise<Spot> {
+    id: string
+  ) : Promise<Spot> {
     return this.service.findOne(id);
   }
 
@@ -41,10 +32,9 @@ export class SpotController {
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe)
-    id: string,
+    id: string, 
     @Body()
-    dto: UpdateSpotDto,
-  ): Promise<Spot> {
+    dto: UpdateSpotDto): Promise<Spot> {
     return this.service.update(id, dto);
   }
 
@@ -52,8 +42,9 @@ export class SpotController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(
     @Param('id', ParseUUIDPipe)
-    id: string,
+    id: string
   ): Promise<void> {
     return this.service.remove(id);
   }
+
 }

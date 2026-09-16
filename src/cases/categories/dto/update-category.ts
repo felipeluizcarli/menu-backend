@@ -9,5 +9,5 @@ export class UpdateCategoryDto {
 
   @IsOptional()
   @IsBoolean()
-  active: boolean;  
+  active?: boolean;
 }
